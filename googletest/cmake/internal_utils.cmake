@@ -146,20 +146,22 @@ endmacro()
 # Defines the gtest & gtest_main libraries.  User tests should link
 # with one of them.
 function(cxx_library_with_type name type cxx_flags)
-  # type can be either STATIC or SHARED to denote a static or shared library.
-  # ARGN refers to additional arguments after 'cxx_flags'.
-  add_library(${name} ${type} ${ARGN})
-  set_target_properties(${name}
-    PROPERTIES
-    COMPILE_FLAGS "${cxx_flags}")
-  if (BUILD_SHARED_LIBS OR type STREQUAL "SHARED")
-    set_target_properties(${name}
-      PROPERTIES
-      COMPILE_DEFINITIONS "GTEST_CREATE_SHARED_LIBRARY=1")
-  endif()
-  if (CMAKE_USE_PTHREADS_INIT)
-    target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
-  endif()
+	# type can be either STATIC or SHARED to denote a static or shared library.
+	# ARGN refers to additional arguments after 'cxx_flags'.
+	AddLibrary(${name} ${type} ${ARGN})
+	IF(CMAKE_PASS_TWO)
+		set_target_properties(${name}
+		PROPERTIES
+		COMPILE_FLAGS "${cxx_flags}")
+		if (BUILD_SHARED_LIBS OR type STREQUAL "SHARED")
+		set_target_properties(${name}
+			PROPERTIES
+			COMPILE_DEFINITIONS "GTEST_CREATE_SHARED_LIBRARY=1")
+		endif()
+		if (CMAKE_USE_PTHREADS_INIT)
+			target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
+		endif()
+	ENDIF()
 endfunction()
 
 ########################################################################
