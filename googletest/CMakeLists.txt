@@ -81,15 +81,13 @@ endif()
 
 ########################################################################
 #
-# Defines the gtest & gtest_main libraries.  User tests should link
+# Defines the gtest libraries.  User tests should link
 # with one of them.
 
 # Google Test libraries.  We build them using more strict warnings than what
 # are used for other targets, to ensure that gtest can be compiled by a user
 # aggressive about warnings.
 cxx_library(gtest "${cxx_strict}" src/gtest-all.cc)
-cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
-target_link_libraries(gtest_main gtest)
 
 # If the CMake version supports it, attach header directory information
 # to the targets for when we are part of a parent build (ie being pulled
@@ -97,7 +95,6 @@ target_link_libraries(gtest_main gtest)
 if (DEFINED CMAKE_VERSION AND NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.11")
 	IF(CMAKE_PASS_TWO)
 		target_include_directories(gtest      INTERFACE "${gtest_SOURCE_DIR}/include")
-		target_include_directories(gtest_main INTERFACE "${gtest_SOURCE_DIR}/include")
 	ENDIF()
 endif()
 
@@ -105,7 +102,7 @@ endif()
 #
 # Install rules
 IF(CMAKE_PASS_TWO)
-	install(TARGETS gtest gtest_main
+	install(TARGETS gtest
 		DESTINATION lib)
 	install(DIRECTORY ${gtest_SOURCE_DIR}/include/gtest
 		DESTINATION include)
@@ -113,21 +110,13 @@ ENDIF()
 
 ########################################################################
 #
-# Samples on how to link user tests with gtest or gtest_main.
+# Samples on how to link user tests with gtest.
 #
 # They are not built by default.  To build them, set the
 # gtest_build_samples option to ON.  You can do it by running ccmake
 # or specifying the -Dgtest_build_samples=ON flag when running cmake.
 
 if (gtest_build_samples)
-  cxx_executable(sample1_unittest samples gtest_main samples/sample1.cc)
-  cxx_executable(sample2_unittest samples gtest_main samples/sample2.cc)
-  cxx_executable(sample3_unittest samples gtest_main)
-  cxx_executable(sample4_unittest samples gtest_main samples/sample4.cc)
-  cxx_executable(sample5_unittest samples gtest_main samples/sample1.cc)
-  cxx_executable(sample6_unittest samples gtest_main)
-  cxx_executable(sample7_unittest samples gtest_main)
-  cxx_executable(sample8_unittest samples gtest_main)
   cxx_executable(sample9_unittest samples gtest)
   cxx_executable(sample10_unittest samples gtest)
 endif()
@@ -151,32 +140,16 @@ if (gtest_build_tests)
   ############################################################
   # C++ tests built with standard compiler flags.
 
-  cxx_test(gtest-death-test_test gtest_main)
   cxx_test(gtest_environment_test gtest)
-  cxx_test(gtest-filepath_test gtest_main)
-  cxx_test(gtest-linked_ptr_test gtest_main)
-  cxx_test(gtest-listener_test gtest_main)
-  cxx_test(gtest_main_unittest gtest_main)
-  cxx_test(gtest-message_test gtest_main)
+
   cxx_test(gtest_no_test_unittest gtest)
-  cxx_test(gtest-options_test gtest_main)
   cxx_test(gtest-param-test_test gtest
     test/gtest-param-test2_test.cc)
-  cxx_test(gtest-port_test gtest_main)
-  cxx_test(gtest_pred_impl_unittest gtest_main)
   cxx_test(gtest_premature_exit_test gtest
     test/gtest_premature_exit_test.cc)
-  cxx_test(gtest-printers_test gtest_main)
-  cxx_test(gtest_prod_test gtest_main
-    test/production.cc)
   cxx_test(gtest_repeat_test gtest)
-  cxx_test(gtest_sole_header_test gtest_main)
   cxx_test(gtest_stress_test gtest)
-  cxx_test(gtest-test-part_test gtest_main)
   cxx_test(gtest_throw_on_failure_ex_test gtest)
-  cxx_test(gtest-typed-test_test gtest_main
-    test/gtest-typed-test2_test.cc)
-  cxx_test(gtest_unittest gtest_main)
   cxx_test(gtest-unittest-api_test gtest)
 
   ############################################################
@@ -186,11 +159,7 @@ if (gtest_build_tests)
   if (NOT MSVC OR MSVC_VERSION GREATER 1310)
     cxx_library(gtest_no_exception "${cxx_no_exception}"
       src/gtest-all.cc)
-    cxx_library(gtest_main_no_exception "${cxx_no_exception}"
-      src/gtest-all.cc src/gtest_main.cc)
   endif()
-  cxx_library(gtest_main_no_rtti "${cxx_no_rtti}"
-    src/gtest-all.cc src/gtest_main.cc)
 
   cxx_test_with_flags(gtest-death-test_ex_nocatch_test
     "${cxx_exception} -DGTEST_ENABLE_CATCH_EXCEPTIONS_=0"
@@ -199,11 +168,7 @@ if (gtest_build_tests)
     "${cxx_exception} -DGTEST_ENABLE_CATCH_EXCEPTIONS_=1"
     gtest test/gtest-death-test_ex_test.cc)
 
-  cxx_test_with_flags(gtest_no_rtti_unittest "${cxx_no_rtti}"
-    gtest_main_no_rtti test/gtest_unittest.cc)
 
-  cxx_shared_library(gtest_dll "${cxx_default}"
-    src/gtest-all.cc src/gtest_main.cc)
 
   cxx_executable_with_flags(gtest_dll_test_ "${cxx_default}"
     gtest_dll test/gtest_all_test.cc)
@@ -211,20 +176,7 @@ if (gtest_build_tests)
                         PROPERTIES
                         COMPILE_DEFINITIONS "GTEST_LINKED_AS_SHARED_LIBRARY=1")
 
-  if (NOT MSVC OR MSVC_VERSION LESS 1600)  # 1600 is Visual Studio 2010.
-    # Visual Studio 2010, 2012, and 2013 define symbols in std::tr1 that
-    # conflict with our own definitions. Therefore using our own tuple does not
-    # work on those compilers.
-    cxx_library(gtest_main_use_own_tuple "${cxx_use_own_tuple}"
-      src/gtest-all.cc src/gtest_main.cc)
 
-    cxx_test_with_flags(gtest-tuple_test "${cxx_use_own_tuple}"
-      gtest_main_use_own_tuple test/gtest-tuple_test.cc)
-
-    cxx_test_with_flags(gtest_use_own_tuple_test "${cxx_use_own_tuple}"
-      gtest_main_use_own_tuple
-      test/gtest-param-test_test.cc test/gtest-param-test2_test.cc)
-  endif()
 
   ############################################################
   # Python tests.
@@ -232,21 +184,6 @@ if (gtest_build_tests)
   cxx_executable(gtest_break_on_failure_unittest_ test gtest)
   py_test(gtest_break_on_failure_unittest)
 
-  # Visual Studio .NET 2003 does not support STL with exceptions disabled.
-  if (NOT MSVC OR MSVC_VERSION GREATER 1310)  # 1310 is Visual Studio .NET 2003
-    cxx_executable_with_flags(
-      gtest_catch_exceptions_no_ex_test_
-      "${cxx_no_exception}"
-      gtest_main_no_exception
-      test/gtest_catch_exceptions_test_.cc)
-  endif()
-
-  cxx_executable_with_flags(
-    gtest_catch_exceptions_ex_test_
-    "${cxx_exception}"
-    gtest_main
-    test/gtest_catch_exceptions_test_.cc)
-  py_test(gtest_catch_exceptions_test)
 
   cxx_executable(gtest_color_test_ test gtest)
   py_test(gtest_color_test)
@@ -257,7 +194,6 @@ if (gtest_build_tests)
   cxx_executable(gtest_filter_unittest_ test gtest)
   py_test(gtest_filter_unittest)
 
-  cxx_executable(gtest_help_test_ test gtest_main)
   py_test(gtest_help_test)
 
   cxx_executable(gtest_list_tests_unittest_ test gtest)
@@ -281,8 +217,6 @@ if (gtest_build_tests)
   cxx_executable(gtest_uninitialized_test_ test gtest)
   py_test(gtest_uninitialized_test)
 
-  cxx_executable(gtest_xml_outfile1_test_ test gtest_main)
-  cxx_executable(gtest_xml_outfile2_test_ test gtest_main)
   py_test(gtest_xml_outfiles_test)
 
   cxx_executable(gtest_xml_output_unittest_ test gtest)
