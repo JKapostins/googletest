@@ -30,7 +30,9 @@
 // Author: wan@google.com (Zhanyong Wan)
 //
 // The Google C++ Testing Framework (Google Test)
-
+#if defined(GNARLY_SHARED)
+#include "Core/Memory/New.inl"
+#endif
 #include "gtest/gtest.h"
 #include "gtest/internal/custom/gtest.h"
 #include "gtest/gtest-spi.h"
