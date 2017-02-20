@@ -224,5 +224,10 @@ if (gtest_build_tests)
   py_test(gtest_xml_output_unittest)
 endif()
 
+
+file(GLOB gtestSources "include/gtest/*.h" "include/gtest/internal/*.h" "include/gtest/internal/custom/*.h" "src/*.cc" "src/*.h")
+add_custom_target(gtest_ide ALL SOURCES ${gtestSources})
+
+SetSolutionFolder (gtest_ide ${ENGINE_TEST_SOLUTION_FOLDER})
 SetSolutionFolder (gtest ${ENGINE_TEST_SOLUTION_FOLDER})
 GenerateDeploymentLocations(gtest)
